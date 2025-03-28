@@ -2,4 +2,6 @@
 **/inputs/
 **/outputs/
 
+# Ignore system files
 *.log
+*.pyc
