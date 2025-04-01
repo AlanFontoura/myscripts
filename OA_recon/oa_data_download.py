@@ -10,7 +10,7 @@ from utils import logger_setup, NoResponseError, ChartTableFormatter
 logger = logger_setup('logs', 'gresham_recon')
 
 
-class OARecon(BaseMain):
+class OADataDownload(BaseMain):
     
     def __init__(self):
         BaseMain.__init__(self)
@@ -162,5 +162,5 @@ class OARecon(BaseMain):
 
 
 if __name__ == "__main__":
-    work = OARecon()
+    work = OADataDownload()
     work.main()
