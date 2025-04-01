@@ -4,7 +4,6 @@ import pandas as pd
 from pathlib import Path
 from multiprocess import Pool
 
-print(os.getcwd())
 from base_main import BaseMain
 from utils import logger_setup, NoResponseError, ChartTableFormatter
 
