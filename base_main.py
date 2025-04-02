@@ -167,9 +167,7 @@ class BaseMain(object):
         Get password from user and login
         """
         password = getpass.getpass()
-        ok = self.api.d1g1t_login(
-            username=self.args.username, password=password
-        )
+        ok = self.api.d1g1t_login(username=self.args.username, password=password)
         if ok:
             LOG.info("Welcome {0}".format(self.args.username))
         return ok

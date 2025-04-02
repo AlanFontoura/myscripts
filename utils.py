@@ -22,7 +22,7 @@ def logger_setup(output_folder="log_outputs", log_file_name_prefix="myapp"):
     os.makedirs(output_folder, exist_ok=True)
 
     # Generate the log file name with a timestamp
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     log_file_name = f"{log_file_name_prefix}_{timestamp}.log"
     log_file_path = os.path.join(output_folder, log_file_name)
 
@@ -31,7 +31,7 @@ def logger_setup(output_folder="log_outputs", log_file_name_prefix="myapp"):
     logger.setLevel(logging.DEBUG)  # Set the base logger level to DEBUG
 
     # Create a formatter with timestamp, log level, message, and code line
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
     # Create a file handler to write logs to a file
     file_handler = logging.FileHandler(log_file_path)
@@ -151,18 +151,14 @@ class ChartTableFormatter:
             "hide_empty_rows", False
         ) and self.is_item_empty(item_data)
 
-        return (
-            ignore_inactive_item or ignore_is_node_alive or ignore_empty_item
-        )
+        return ignore_inactive_item or ignore_is_node_alive or ignore_empty_item
 
     def _get_label_from_metric(self, metric: dict) -> str:
         label = metric.get("slug")
 
         if label.endswith("custom-period"):
             date_range = metric.get("date_range") or {}
-            start, end = date_range.get("start_date"), date_range.get(
-                "end_date"
-            )
+            start, end = date_range.get("start_date"), date_range.get("end_date")
             if start and end:
                 label += "|" + self.format_period_label(
                     start_date=self.str2date(start),
@@ -176,9 +172,7 @@ class ChartTableFormatter:
         if not items:
             return 0
 
-        max_depth = max(
-            self._get_data_depth(items=item.get("items")) for item in items
-        )
+        max_depth = max(self._get_data_depth(items=item.get("items")) for item in items)
         return 1 + max_depth
 
     def _dfs_category(self, category, columns):
@@ -200,9 +194,7 @@ class ChartTableFormatter:
                 for index in range(data_depth)
             ]
         else:
-            category_columns = [
-                DfColumn(current_index, category_id, category_name)
-            ]
+            category_columns = [DfColumn(current_index, category_id, category_name)]
 
         columns.extend(category_columns)
 
@@ -226,9 +218,7 @@ class ChartTableFormatter:
         if metrics:
             metric_categories, non_metric_categories = [], []
             metric_label_order = {
-                self._get_label_from_metric(metric=metric): metric.get(
-                    "order", 0
-                )
+                self._get_label_from_metric(metric=metric): metric.get("order", 0)
                 for metric in metrics
             }
 
@@ -283,9 +273,7 @@ class ChartTableFormatter:
 
     def _get_value(self, data, column):
         value = data.get("value")
-        if str(column.category_id).lower() == "date" and isinstance(
-            value, int
-        ):
+        if str(column.category_id).lower() == "date" and isinstance(value, int):
             # we adjust a value as a corner case for TrendAnalysisChart or any ChartTable with 'date' category
             value = self.timestamp_to_datetime(value)
 
@@ -324,6 +312,7 @@ class ChartTableFormatter:
 
 
 # Custom Exceptions
+
 
 class CalculationNotSupported(Exception):
     pass
