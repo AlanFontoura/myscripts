@@ -145,7 +145,7 @@ class OADataDownload(BaseMain):
             logger.info(f"Download OK for account {account_id}")
             res.insert(1, "Account ID", account_id)
             res.to_csv(os.path.join(self.output_folder, filename), index=False)
-        except NoResponseError as e:
+        except NoResponseError:
             logger.warning(f"No response for account {account_id}")
 
     def run_parallel_calcs(self):
