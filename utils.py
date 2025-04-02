@@ -7,7 +7,9 @@ import os
 import pandas as pd
 
 
-def logger_setup(output_folder="log_outputs", log_file_name_prefix="myapp", output="file"):
+def logger_setup(
+    output_folder="log_outputs", log_file_name_prefix="myapp", output="file"
+):
     """
     Sets up a logger that logs to both the console and a file.
 
