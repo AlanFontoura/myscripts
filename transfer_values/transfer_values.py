@@ -2,7 +2,6 @@ import awswrangler as wr
 import pandas as pd
 from configparser import ConfigParser
 import logging
-import argparse
 from base_main import BaseMain
 
 LOG = logging.getLogger(__name__)
@@ -18,10 +17,11 @@ single client.
 - For cash transfers, the transfer value is d1g1t Transaction Amount
 
 The necessary inputs to run the code are:
-- Variables
+- Variables: must be set on inputs/transfer_values.ini file
     * client: client name
     * environment: either production or staging
     * region: either CA or US
+    * base currency: base currency on FX file (either CAD or USD)    
 - Files
     * <CLIENT>-fx-rate.csv: export from Django API at https://api-<CLIENT>.d1g1t<staging>.com/admin-d1g1t/main/fxrate/
     in csv format and saved into folder /inputs/. There is no need to edit the file.
@@ -48,9 +48,6 @@ transactions.
 
 
 class TransferValues(BaseMain):
-    # Main variable inputs for the script. Client name, environment (either production or staging),
-    # region (either CA or US) and base currency (either CAD or USD)
-
     def __init__(self):
         super().__init__()
         constants = ConfigParser()
@@ -74,9 +71,6 @@ class TransferValues(BaseMain):
         )
 
     def get_fx_rates(self):
-        # FX Rate file, exported from Django API, at https://api-<CLIENT>.d1g1t<staging>.com/admin-d1g1t/main/fxrate/
-        # in csv format. Just save it as <CLIENT>-fx-rate.csv on the inputs folder. No need to edit it.
-
         fx_rates = pd.read_csv(
             f"transfer_values/inputs/{self.client}-fx-rate.csv"
         ).rename(columns={"date": "Trade Date", "close": "FX Rate"})
@@ -118,9 +112,6 @@ class TransferValues(BaseMain):
         return adjusted_table
 
     def get_prices(self):
-        # Prices file, generated via Rundeck job 'Export (ALL with FPK) Prices (2.26|2.28)' located at
-        # http://rundeck.d1g1twealth.com:4440/project/FE/job/show/c5efa0c6-158b-4b55-91e6-b6f6e45a5728
-
         security_prices = pd.read_csv(
             f"{self.export_path}/{self.env}-{self.client.lower()}-prices.csv.gz"
         )
@@ -148,8 +139,6 @@ class TransferValues(BaseMain):
         return security_prices
 
     def get_instruments(self):
-        # Instruments file, generated via Rundeck job 'Export Instruments - Generic' located at
-        # http://rundeck.d1g1twealth.com:4440/project/FE/job/show/eefcb4c7-a0f6-4272-ac2d-d353dd2979ca
         instruments = pd.read_csv(f"{self.export_path}/instruments-{self.env}.csv")
         currencies = instruments[["InstrumentID", "Name", "Currency"]].rename(
             columns={
@@ -167,8 +156,6 @@ class TransferValues(BaseMain):
         return instruments, currencies
 
     def get_transactions(self):
-        # Transactions file, generated via Rundeck job 'Export Transactions (2.26|2.28)' located at
-        # http://rundeck.d1g1twealth.com:4440/project/FE/job/show/94d9b51f-2069-455e-81dc-8a63ddd25aa1
         trx = pd.read_csv(
             f"{self.export_path}/{self.env}-{self.client.lower()}-transactions.csv.gz"
         )
@@ -196,7 +183,9 @@ class TransferValues(BaseMain):
             ~transactions["d1g1t Transaction Type"].str.contains("security")
         ]
         cash_with_fx = cash[~cash["Trade FxRate"].isna()]
-        cash_with_fx.loc[:, "TransferValueTradeCurrency"] = cash_with_fx.loc[:, "d1g1t Transaction Amount"]
+        cash_with_fx.loc[:, "TransferValueTradeCurrency"] = cash_with_fx.loc[
+            :, "d1g1t Transaction Amount"
+        ]
         cash_with_fx.loc[
             cash_with_fx["Transaction Currency"] == "CAD", "TransferValueCAD"
         ] = cash_with_fx.loc[
@@ -225,7 +214,7 @@ class TransferValues(BaseMain):
                 cash_with_fx["Transaction Currency"] == "USD",
                 "d1g1t Transaction Amount",
             ]
-            / cash_with_fx.loc[
+            * cash_with_fx.loc[
                 cash_with_fx["Transaction Currency"] == "USD", "Trade FxRate"
             ]
         )
@@ -253,7 +242,6 @@ class TransferValues(BaseMain):
                 TransferValueCAD=cash["TransferValueUSD"] * cash["CAD/USD"]
             )
 
-        # cash = cash.drop(columns=["FX Rate", "CAD/USD"])
         cash = pd.concat([cash, cash_with_fx])
 
         return cash
@@ -299,8 +287,6 @@ class TransferValues(BaseMain):
                 TransferValueCAD=sec_with_mv["TransferValueUSD"]
                 * sec_with_mv["CAD/USD"]
             )
-
-        # sec_with_mv = sec_with_mv.drop(columns=["FX Rate", "CAD/USD"])
 
         return sec_with_mv
 
@@ -357,14 +343,17 @@ class TransferValues(BaseMain):
             .sort_values("Trade Date")
             .reset_index(drop=True)
         )
-        final_cols += ['CAD/USD', 'UoM', 'Market Price', 'TransferValueTradeCurrency',
-                       'TransferValueCAD', 'TransferValueUSD']
-        # final_cols.append("TransferValueTradeCurrency")
-        # final_cols.append("TransferValueCAD")
-        # final_cols.append("TransferValueUSD")
+        final_cols += [
+            "CAD/USD",
+            "UoM",
+            "Market Price",
+            "TransferValueTradeCurrency",
+            "TransferValueCAD",
+            "TransferValueUSD",
+        ]
 
         final_file = final_file[final_cols]
-        final_file = final_file.rename(columns={'CAD/USD': 'USD/CAD'})
+        final_file = final_file.rename(columns={"CAD/USD": "USD/CAD"})
 
         negative_transactions = [
             "internal-transfer-security-out",
@@ -421,7 +410,9 @@ class TransferValues(BaseMain):
         prices = self.get_prices()
         instruments, currencies = self.get_instruments()
         transactions = self.get_transactions()
-        transactions = transactions.merge(currencies, how="left").merge(prices, how='left')
+        transactions = transactions.merge(currencies, how="left").merge(
+            prices, how="left"
+        )
         final_cols = list(transactions.columns)
         cash = self.create_transfer_value_cols_for_cash(
             transactions, fx_rates, cad_usd_fx
