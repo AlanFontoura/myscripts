@@ -30,8 +30,8 @@ The necessary inputs to run the code are:
     http://rundeck.d1g1twealth.com:4440/project/FE/job/show/c5efa0c6-158b-4b55-91e6-b6f6e45a5728. There is no need
     to save a local copy. The script downloads the file from its default location at S3.
     
-    * <ENV>-<CLIENT>-transactions.csv.gz: export from Rundeck job 'Export Transactions (3.x)' located at
-    http://rundeck.d1g1twealth.com:4440/project/FE/job/show/5e686c6a-1408-4e81-b2e9-b36d1b697e97. There is no need
+    * <ENV>-<CLIENT>-transactions.csv.gz: export from Rundeck job 'Export Transactions (5.x)' located at
+    http://rundeck.d1g1twealth.com:4440/project/FE/job/show/6e61325f-c03f-457d-b79b-b55f4b595810. There is no need
     to save a local copy. The script downloads the file from its default location at S3.
     
     * instruments-<ENV>.csv: export from Rundeck job 'Export Instruments - Generic' located at
