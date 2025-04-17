@@ -85,7 +85,7 @@ class OARecon:
         cols = df.columns.tolist()[2:]
         cols.sort()
         final_df = df[self.base_columns + cols]
-        # final_df = final_df[final_df['Date'] != INITIAL_DATE]
+        final_df = final_df[final_df['Date'] != '2020-12-31']
         return final_df
 
     def filter_non_recon_entries(self, df):
@@ -93,7 +93,7 @@ class OARecon:
             f"{index+1} - {value}_recon"
             for index, value in enumerate(self.comparison_columns)
         ]
-        non_recon_df = df[df.loc[:, recon_cols].gt(0).any(axis=1)]
+        non_recon_df = df[df.loc[:, recon_cols].gt(1).any(axis=1)]
         return non_recon_df
 
     def count_breaks(self, df):
@@ -103,7 +103,7 @@ class OARecon:
         ]
         breaks = (
             df.groupby("Account ID")[recon_cols]
-            .apply(lambda x: (x != 0).sum())
+            .apply(lambda x: (abs(x) > 1).sum())
             .reset_index(drop=False)
         )
         return breaks
@@ -134,21 +134,21 @@ class OARecon:
                 continue
 
         try:
-            pd.concat(full_recon_list).to_csv(
+            pd.concat(full_recon_list).sort_values(['Account ID', 'Date']).to_csv(
                 f"OA_recon/outputs/full_recon.csv", index=False
             )
         except ValueError:
             print("Nothing to concatenate on full recon")
 
         try:
-            pd.concat(filtered_recon_list).to_csv(
+            pd.concat(filtered_recon_list).sort_values(['Account ID', 'Date']).to_csv(
                 f"OA_recon/outputs/filtered_recon.csv", index=False
             )
         except ValueError:
             print("Nothing to concatenate on filtered recon")
 
         try:
-            pd.concat(break_count_list).to_csv(
+            pd.concat(break_count_list).sort_values(['Account ID']).to_csv(
                 f"OA_recon/outputs/break_count.csv", index=False
             )
         except ValueError:
