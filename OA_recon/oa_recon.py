@@ -85,7 +85,7 @@ class OARecon:
         cols = df.columns.tolist()[2:]
         cols.sort()
         final_df = df[self.base_columns + cols]
-        final_df = final_df[final_df['Date'] != '2020-12-31']
+        final_df = final_df[final_df["Date"] != "2020-12-31"]
         return final_df
 
     def filter_non_recon_entries(self, df):
@@ -111,6 +111,17 @@ class OARecon:
     def recon_values_and_flows(self):
         base_files = os.listdir(f"OA_recon/outputs/{self.args.base_env}")
         target_files = os.listdir(f"OA_recon/outputs/{self.args.target_env}")
+        accounts = pd.read_csv("OA_recon/inputs/Account.csv")[
+            ["AccountCode", "AccountName", "CustodianName"]
+        ]
+        accounts.rename(
+            columns={
+                "AccountCode": "Account ID",
+                "AccountName": "Account Name",
+                "CustodianName": "Custodian",
+            },
+            inplace=True,
+        )
         total_files = len(base_files)
         counter = 0
         full_recon_list = []
@@ -134,23 +145,23 @@ class OARecon:
                 continue
 
         try:
-            pd.concat(full_recon_list).sort_values(['Account ID', 'Date']).to_csv(
-                f"OA_recon/outputs/full_recon.csv", index=False
-            )
+            pd.concat(full_recon_list).merge(accounts, how="left").sort_values(
+                ["Account ID", "Date"]
+            ).to_csv(f"OA_recon/outputs/full_recon.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on full recon")
 
         try:
-            pd.concat(filtered_recon_list).sort_values(['Account ID', 'Date']).to_csv(
-                f"OA_recon/outputs/filtered_recon.csv", index=False
-            )
+            pd.concat(filtered_recon_list).merge(accounts, how="left").sort_values(
+                ["Account ID", "Date"]
+            ).to_csv(f"OA_recon/outputs/filtered_recon.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on filtered recon")
 
         try:
-            pd.concat(break_count_list).sort_values(['Account ID']).to_csv(
-                f"OA_recon/outputs/break_count.csv", index=False
-            )
+            pd.concat(break_count_list).merge(accounts, how="left").sort_values(
+                ["Account ID"]
+            ).to_csv(f"OA_recon/outputs/break_count.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on break count")
 
