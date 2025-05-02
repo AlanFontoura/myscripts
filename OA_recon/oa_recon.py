@@ -2,6 +2,7 @@ from utils import logger_setup
 import pandas as pd
 import os
 import argparse
+from datetime import datetime
 
 logger = logger_setup("logs", "vnf_recon")
 
@@ -109,6 +110,7 @@ class OARecon:
         return breaks
 
     def recon_values_and_flows(self):
+        today = datetime.today().strftime("%Y-%m-%d")
         base_files = os.listdir(f"OA_recon/outputs/{self.args.base_env}")
         target_files = os.listdir(f"OA_recon/outputs/{self.args.target_env}")
         accounts = pd.read_csv("OA_recon/inputs/Account.csv")[
@@ -147,21 +149,21 @@ class OARecon:
         try:
             pd.concat(full_recon_list).merge(accounts, how="left").sort_values(
                 ["Account ID", "Date"]
-            ).to_csv(f"OA_recon/outputs/full_recon.csv", index=False)
+            ).to_csv(f"OA_recon/outputs/full_recon_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on full recon")
 
         try:
             pd.concat(filtered_recon_list).merge(accounts, how="left").sort_values(
                 ["Account ID", "Date"]
-            ).to_csv(f"OA_recon/outputs/filtered_recon.csv", index=False)
+            ).to_csv(f"OA_recon/outputs/filtered_recon_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on filtered recon")
 
         try:
             pd.concat(break_count_list).merge(accounts, how="left").sort_values(
                 ["Account ID"]
-            ).to_csv(f"OA_recon/outputs/break_count.csv", index=False)
+            ).to_csv(f"OA_recon/outputs/break_count_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on break count")
 
