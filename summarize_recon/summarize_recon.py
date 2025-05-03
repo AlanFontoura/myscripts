@@ -242,6 +242,14 @@ class SummarizeRecon(BaseMain):
         )
         return recon
 
+    def alternative_summary(self, recon, threshold=50):
+        recon['d1g1t_mv_clean'] = recon["d1g1t_mv_clean"].fillna(0)
+        recon['custodian_mv_clean'] = recon["custodian_mv_clean"].fillna(0)
+        recon["mv_clean_reconciled"] = (
+            abs(recon["d1g1t_mv_clean"] - recon["custodian_mv_clean"]) < threshold
+        )
+        return recon
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
@@ -264,4 +272,13 @@ if __name__ == "__main__":
     )
     summary_by_household.to_csv(
         "summarize_recon/outputs/recon_summary_by_household.csv", index=False
+    )
+
+    alternative_data = work.alternative_summary(recon_data)
+    alternative_summary = work.summarize_recon(alternative_data)
+    alternative_summary = work.add_hierarchy(alternative_summary, hierarchy)
+    alternative_summary_by_household = work.summarize_by_household(alternative_summary)
+    alternative_summary_by_household.to_csv(
+        "summarize_recon/outputs/recon_summary_by_household_alternative.csv",
+        index=False,
     )
