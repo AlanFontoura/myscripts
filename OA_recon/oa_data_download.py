@@ -48,7 +48,7 @@ class OADataDownload(BaseMain):
     def create_output_folder(self) -> None:
         try:
             server_name = self.args.server.replace("https://api-", "").split(".")[0]
-            folder = f"OA_recon/outputs/{server_name}"
+            folder = f"OA_recon/outputs/{server_name}/{self.args.level}"
             folder_path = Path(folder)
             folder_path.mkdir(parents=True, exist_ok=True)
             print("Output folder created")
@@ -60,7 +60,7 @@ class OADataDownload(BaseMain):
     @property
     def output_folder(self):
         server_name = self.args.server.replace("https://api-", "").split(".")[0]
-        return f"OA_recon/outputs/{server_name}"
+        return f"OA_recon/outputs/{server_name}/{self.args.level}"
 
     @property
     def input_file(self):
@@ -105,9 +105,9 @@ class OADataDownload(BaseMain):
             entities.to_csv(f"OA_recon/inputs/{self.input_file}", index=False)
 
         if self.vnf_entities:
-            acc = acc[acc["firm_provided_key"].isin(self.vnf_entities)]
+            entities = entities[entities["firm_provided_key"].isin(self.vnf_entities)]
 
-        return acc
+        return entities
 
     def get_calculation(self, calc_type: str, payload: dict):
         calc_call = self.api.calc(calc_type)
@@ -145,19 +145,24 @@ class OADataDownload(BaseMain):
         else:
             raise NoResponseError
 
-    def run_calc(self, account_id: str, entity_id: str):
+    def run_calc(self, firm_provided_key: str, entity_id: str):
         payload = self.payload
-        payload["control"]["selected_entities"]["accounts_or_positions"] = [[entity_id]]
-        filename = f"{account_id}.csv"
+        if self.args.level == "accounts":
+            payload["control"]["selected_entities"] = {"accounts_or_positions": [[entity_id]]}
+        elif self.args.level == "clients":
+            payload["control"]["selected_entities"] = {"clients": [entity_id]}
+        elif self.args.level == "households":
+            payload["control"]["selected_entities"] = {"households": [entity_id]}
+        filename = f"{firm_provided_key}.csv"
         try:
             resp = self.get_calculation("net-asset-value-history", payload)
             parser = ChartTableFormatter(resp, payload)
             res = parser.parse_data()
-            logger.info(f"Download OK for account {account_id}")
-            res.insert(1, "Account ID", account_id)
+            logger.info(f"Download OK for {self.args.level[:(-1)]} {firm_provided_key}")
+            res.insert(1, "Entity ID", firm_provided_key)
             res.to_csv(os.path.join(self.output_folder, filename), index=False)
         except NoResponseError:
-            logger.warning(f"No response for account {account_id}")
+            logger.warning(f"No response for {self.args.level[:(-1)]} {firm_provided_key}")
 
     def run_parallel_calcs(self):
         downloaded_accounts = [
