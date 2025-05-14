@@ -34,6 +34,16 @@ class OADataDownload(BaseMain):
             required=False,
             help="Currency used in the report",
         )
+        
+        self.parser.add_argument(
+            "-lv",
+            "--level",
+            dest="level",
+            default="accounts",
+            type=str,
+            required=False,
+            help="Hierarchy level to download data (either accounts, clients or households)",
+        )
 
     def create_output_folder(self) -> None:
         try:
@@ -55,7 +65,7 @@ class OADataDownload(BaseMain):
     @property
     def input_file(self):
         server_name = self.args.server.replace("https://api-", "").split(".")[0]
-        return f"{server_name}_entity_ids.csv"
+        return f"{server_name}_{self.args.level}_entity_ids.csv"
 
     @property
     def payload(self):
@@ -79,22 +89,23 @@ class OADataDownload(BaseMain):
         return payload
 
     @property
-    def vnf_accounts(self):
-        if "vnf_accounts.csv" in os.listdir("OA_recon/inputs"):
-            vnf_accounts = pd.read_csv("OA_recon/inputs/vnf_accounts.csv")
-            return vnf_accounts["Portfolio Firm Provided Key"].unique().tolist()
+    def vnf_entities(self):
+        vnf_entities = f"vnf_{self.args.level}.csv"
+        if vnf_entities in os.listdir("OA_recon/inputs"):
+            vnf_data = pd.read_csv(f"OA_recon/inputs/{vnf_entities}")
+            return vnf_data["Portfolio Firm Provided Key"].unique().tolist()
         return None
 
     @property
     def entity_ids(self) -> pd.DataFrame:
         if self.input_file in os.listdir("OA_recon/inputs"):
-            acc = pd.read_csv(f"OA_recon/inputs/{self.input_file}")
+            entities = pd.read_csv(f"OA_recon/inputs/{self.input_file}")
         else:
-            acc = self.get_account_data()
-            acc.to_csv(f"OA_recon/inputs/{self.input_file}", index=False)
+            entities = self.get_entity_data()
+            entities.to_csv(f"OA_recon/inputs/{self.input_file}", index=False)
 
-        if self.vnf_accounts:
-            acc = acc[acc["firm_provided_key"].isin(self.vnf_accounts)]
+        if self.vnf_entities:
+            acc = acc[acc["firm_provided_key"].isin(self.vnf_entities)]
 
         return acc
 
@@ -105,9 +116,9 @@ class OADataDownload(BaseMain):
             raise NoResponseError("Request returned no result!")
         return response
 
-    def get_account_data(self, batch_size=1000):
+    def get_entity_data(self, batch_size=1000):
         api_call = self.api.data
-        api_call._store["base_url"] += "accounts/"
+        api_call._store["base_url"] += f"{self.args.level}/"
         response = api_call.get(extra=f"limit={batch_size}")
 
         if response:
