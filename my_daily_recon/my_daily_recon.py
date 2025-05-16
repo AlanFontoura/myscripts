@@ -275,8 +275,9 @@ class MyDailyRecon(BaseMain):
                 "Market Value - Reconciled",
             ]
         ]
+        current_date = recon.iloc[0, 0]
         recon = recon.sort_values(["Date", "Account ID", "Security ID"])
-        recon_file = f"my_daily_recon/outputs/{self.client}_{self.env}_recon_{self.args.date}.csv"
+        recon_file = f"my_daily_recon/outputs/{self.client}_{self.env}_recon_{current_date}.csv"
         recon.to_csv(recon_file, index=False)
         LOG.info(f"Reconciliation file saved to {recon_file}")
 
