@@ -118,6 +118,7 @@ class MyDailyRecon(BaseMain):
                 "Market Value - Custodian",
             ]
         ]
+        pos['Price - Custodian'] = pos['Price - Custodian'].fillna(0)
         pos = (
             pos.groupby(
                 ["Date", "Account ID", "Security ID", "Price - Custodian"],
@@ -246,6 +247,21 @@ class MyDailyRecon(BaseMain):
         recon = self.merge_files(tracking, position, security)
         recon = self.add_recon_columns(recon)
         recon = self.recon_adjustments(recon)
+        recon = self.filter_empty_rows(recon)
+        return recon
+
+    def filter_empty_rows(self, recon):
+        """
+        Filter out empty rows from the reconciliation dataframe
+        """
+        subset_columns = [
+            "Units - d1g1t",
+            "Units - Custodian",
+            "Market Value - d1g1t",
+            "Market Value - Custodian",
+        ]
+        mask = recon[subset_columns].isin([0, 0.0, np.nan]).all(axis=1)
+        recon = recon[~mask]
         return recon
 
     def output_file(self, recon):
@@ -277,7 +293,9 @@ class MyDailyRecon(BaseMain):
         ]
         current_date = recon.iloc[0, 0]
         recon = recon.sort_values(["Date", "Account ID", "Security ID"])
-        recon_file = f"my_daily_recon/outputs/{self.client}_{self.env}_recon_{current_date}.csv"
+        recon_file = (
+            f"my_daily_recon/outputs/{self.client}_{self.env}_recon_{current_date}.csv"
+        )
         recon.to_csv(recon_file, index=False)
         LOG.info(f"Reconciliation file saved to {recon_file}")
 
