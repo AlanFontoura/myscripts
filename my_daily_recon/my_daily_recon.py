@@ -72,7 +72,9 @@ class MyDailyRecon(BaseMain):
         Get the tracking file from S3
         """
         tracking = pd.read_csv(self.tracking_file)
-        tracking.loc[tracking["instrument"] == "USD", 'mv'] = tracking.loc[tracking["instrument"] == "USD", 'units']
+        tracking.loc[tracking["instrument"] == "USD", "mv"] = tracking.loc[
+            tracking["instrument"] == "USD", "units"
+        ]
         tracking = tracking[tracking["is_dead"] == "f"]
         tracking = tracking.dropna(subset=["units", "mv"], how="all")
         tracking = tracking[
@@ -119,7 +121,7 @@ class MyDailyRecon(BaseMain):
                 "Market Value - Custodian",
             ]
         ]
-        pos['Price - Custodian'] = pos['Price - Custodian'].fillna(0)
+        pos["Price - Custodian"] = pos["Price - Custodian"].fillna(0)
         pos = (
             pos.groupby(
                 ["Date", "Account ID", "Security ID", "Price - Custodian"],
