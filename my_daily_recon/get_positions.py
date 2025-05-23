@@ -90,4 +90,3 @@ mv_df.loc[mv_df['Security ID'] == 'BC36B21F-D673-492F-8D1D-30956550D237', 'Secur
 units_df.to_csv('my_daily_recon/outputs/units.csv', index=False)
 mv_df.to_csv('my_daily_recon/outputs/mv.csv', index=False)
 
-pd.read_pickle('/mnt/g/My Dri')
