@@ -69,18 +69,24 @@ class ReconDailyDelta(BaseMain):
         return new_breaks
 
     def get_transactions(self, new_breaks):
+        logging.info("Fetching transaction files from S3...")
         transaction_files = wr.s3.list_objects(
             self.custodian_folder, suffix="Transaction.csv"
         )
         transaction_files = [
             file for file in transaction_files if file.split("/")[5] > "20250318"
         ]
+        logging.info(f"Found {len(transaction_files)} transaction files.")
         dfl = []
         filtering_df = new_breaks[["Account ID", "Security ID"]].rename(
             columns={"Account ID": "AccountCode", "Security ID": "SecurityID1"}
         )
+        
+        counter = 0
 
         for file in transaction_files:
+            counter += 1
+            logging.info(f"Processing file {counter}/{len(transaction_files)}: {file}")
             df = wr.s3.read_csv(file)
             df = df.merge(filtering_df, how="inner")
             df["source"] = file.split("/")[5]
@@ -94,18 +100,24 @@ class ReconDailyDelta(BaseMain):
         return transactions
 
     def get_positions(self, new_breaks):
+        logging.info("Fetching position files from S3...")
         position_files = wr.s3.list_objects(
             self.custodian_folder, suffix="Position.csv"
         )
         position_files = [
             file for file in position_files if file.split("/")[5] > "20250318"
         ]
+        logging.info(f"Found {len(position_files)} position files.")
         dfl = []
         filtering_df = new_breaks[["Account ID", "Security ID"]].rename(
             columns={"Account ID": "AccountCode", "Security ID": "SecurityID"}
         )
+        
+        counter = 0
 
         for file in position_files:
+            counter += 1
+            logging.info(f"Processing file {counter}/{len(position_files)}: {file}")
             df = wr.s3.read_csv(file)
             df = df.merge(filtering_df, how="inner")
             df["source"] = file.split("/")[5]
