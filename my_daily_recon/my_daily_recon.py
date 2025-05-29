@@ -267,6 +267,49 @@ class MyDailyRecon(BaseMain):
         recon = recon[~mask]
         return recon
 
+    def split_recon(self, recon, current_date):
+        recon['reconciled'] = recon['Units - Reconciled'] & recon['Market Value - Reconciled']
+        recon = recon[~recon['reconciled']]
+        cols = [
+                "Account ID",
+                "Security ID",
+                "Security Name",
+                "Symbol",
+                "Security Type",
+                "Units - d1g1t",
+                "Units - Custodian",
+                "Units - Diff",
+                "Units - Reconciled",
+                "Price - d1g1t",
+                "Price - Custodian",
+                "Price - Diff",
+                "Price - Reconciled",
+                "Market Value - d1g1t",
+                "Market Value - Custodian",
+                "Market Value - Diff",
+                "Market Value - Reconciled",
+            ]
+        units_and_price = [
+                "Units - d1g1t",
+                "Units - Custodian",
+                "Units - Diff",
+                "Units - Reconciled",
+                "Price - d1g1t",
+                "Price - Custodian",
+                "Price - Diff",
+                "Price - Reconciled",
+            ]
+        cashlike = recon.loc[recon["Category"] == "Cashlike", cols].drop(columns="Security Type")
+        marketable = recon.loc[recon["Category"] == "Marketable", cols]
+        non_marketable = recon.loc[recon["Category"] == "Non Marketable", cols].drop(columns=units_and_price)
+        true_pe = recon.loc[recon["Category"] == "True PE", cols].drop(columns=units_and_price)
+
+        cashlike.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_cashlike_recon.csv", index=False)
+        marketable.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_marketable_recon.csv", index=False)
+        non_marketable.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_non_marketable_recon.csv", index=False)
+        true_pe.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_true_pe_recon.csv", index=False)
+
+
     def output_file(self, recon):
         """
         Save the reconciliation file
@@ -295,12 +338,13 @@ class MyDailyRecon(BaseMain):
             ]
         ]
         current_date = recon.iloc[0, 0]
-        recon = recon.sort_values(["Date", "Account ID", "Security ID"])
+        recon = recon.sort_values(["Account ID", "Security ID"])
         recon_file = (
-            f"my_daily_recon/outputs/{self.client}_{self.env}_recon_{current_date}.csv"
+            f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_full_recon.csv"
         )
         recon.to_csv(recon_file, index=False)
-        LOG.info(f"Reconciliation file saved to {recon_file}")
+        self.split_recon(recon, current_date)
+        LOG.info(f"Reconciliation files saved to my_daily_recon/outputs/")
 
     def run(self):
         """
