@@ -104,8 +104,8 @@ class OADataDownload(BaseMain):
             entities = self.get_entity_data()
             entities.to_csv(f"OA_recon/inputs/{self.input_file}", index=False)
 
-        if self.vnf_entities:
-            entities = entities[entities["firm_provided_key"].isin(self.vnf_entities)]
+        # if self.vnf_entities:
+            # entities = entities[entities["firm_provided_key"].isin(self.vnf_entities)]
 
         return entities
 
