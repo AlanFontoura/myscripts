@@ -6,3 +6,4 @@
 *.log
 *.pyc
 /.vscode/
+.favorites.json
