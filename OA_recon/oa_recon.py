@@ -26,8 +26,16 @@ class OARecon:
             required=True,
             help="Name of the folder with the target environment files",
         )
+        self.parser.add_argument(
+            "-lv",
+            "--level",
+            dest="level",
+            type=str,
+            default="accounts",
+            help="Set the recon level (either accounts, clients or households)",
+        )
         self.args = self.parser.parse_args()
-        self.base_columns = ["Account ID", "Date"]
+        self.base_columns = ["Entity ID", "Date"]
         self.comparison_columns = [
             "Net Deposits",
             "Net Additions",
@@ -40,11 +48,11 @@ class OARecon:
 
     @property
     def base_files(self):
-        return os.listdir(f"OA_recon/outputs/{self.args.base_env}")
+        return os.listdir(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}")
 
     @property
     def target_files(self):
-        return os.listdir(f"OA_recon/outputs/{self.args.self.args.target_env}")
+        return os.listdir(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}")
 
     def get_vnf_data(self, file_path):
         vnf_data = pd.read_csv(file_path)
@@ -58,8 +66,8 @@ class OARecon:
         return vnf_data
 
     def merge_data(self, file):
-        base_df = self.get_vnf_data(f"OA_recon/outputs/{self.args.base_env}/{file}")
-        target_df = self.get_vnf_data(f"OA_recon/outputs/{self.args.target_env}/{file}")
+        base_df = self.get_vnf_data(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}/{file}")
+        target_df = self.get_vnf_data(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}/{file}")
 
         recon_df = base_df.merge(
             target_df,
@@ -111,8 +119,8 @@ class OARecon:
 
     def recon_values_and_flows(self):
         today = datetime.today().strftime("%Y-%m-%d")
-        base_files = os.listdir(f"OA_recon/outputs/{self.args.base_env}")
-        target_files = os.listdir(f"OA_recon/outputs/{self.args.target_env}")
+        base_files = os.listdir(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}")
+        target_files = os.listdir(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}")
         accounts = pd.read_csv("OA_recon/inputs/Account.csv")[
             ["AccountCode", "AccountName", "CustodianName"]
         ]
@@ -138,6 +146,7 @@ class OARecon:
             try:
                 merged_df = self.merge_data(file)
                 recon_df = self.run_recon(merged_df)
+                recon_df.rename(columns={"Entity ID": "Account ID"}, inplace=True)
                 full_recon_list.append(recon_df)
                 filtered_recon_list.append(self.filter_non_recon_entries(recon_df))
                 break_count_list.append(self.count_breaks(recon_df))
