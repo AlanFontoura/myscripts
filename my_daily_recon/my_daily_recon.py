@@ -271,6 +271,7 @@ class MyDailyRecon(BaseMain):
         recon['reconciled'] = recon['Units - Reconciled'] & recon['Market Value - Reconciled']
         recon = recon[~recon['reconciled']]
         cols = [
+                # "Date",
                 "Account ID",
                 "Security ID",
                 "Security Name",
