@@ -135,10 +135,10 @@ class ReconDailyDelta(BaseMain):
         current = self.filter_recon_file(current)
         previous = self.filter_recon_file(previous)
         new_breaks = self.compare_recon_files(current, previous)
-        positions = self.get_positions(new_breaks)
-        transactions = self.get_transactions(new_breaks)
         today = new_breaks.loc[0, "Date"]
         new_breaks.to_csv(f"my_daily_recon/outputs/{today}_new_breaks.csv", index=False)
+        positions = self.get_positions(new_breaks)
+        transactions = self.get_transactions(new_breaks)
         positions.to_csv(
             f"my_daily_recon/outputs/{today}_new_break_positions.csv", index=False
         )
