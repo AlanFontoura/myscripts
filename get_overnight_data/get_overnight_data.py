@@ -11,7 +11,7 @@ def get_overnight_data(date, client):
         date (str): The date in YYYYMMDD format.
         client_name (str): The name of the client.
     """
-    
+    date = date.replace("-", "")  # Ensure date is in YYYYMMDD format
     s3_folder = lookup.s3_path[client]
     s3_folder = s3_folder.replace("YYYYMMDD", date)
 
