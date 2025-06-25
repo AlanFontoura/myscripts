@@ -76,6 +76,7 @@ class MyDailyRecon(BaseMain):
             tracking["instrument"] == "USD", "units"
         ]
         tracking = tracking[tracking["is_dead"] == "f"]
+        tracking = tracking[~tracking["account"].str.contains("_")]
         tracking = tracking.dropna(subset=["units", "mv"], how="all")
         tracking = tracking[
             ["date", "account", "instrument", "scale", "units", "price", "mv"]
