@@ -31,7 +31,8 @@ def get_overnight_data(date, client):
         
         # Step 5: Download each file to the local folder
         for s3_file in s3_files:
-            local_file_path = os.path.join(local_folder, os.path.basename(s3_file))
+            filename = s3_file.replace('.csv', f'_{date}.csv')
+            local_file_path = os.path.join(local_folder, os.path.basename(filename))
             print(f"Downloading {s3_file} to {local_file_path}")
             wr.s3.download(path=s3_file, local_file=local_file_path)
         
