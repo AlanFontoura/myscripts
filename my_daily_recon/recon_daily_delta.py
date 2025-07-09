@@ -23,7 +23,7 @@ class ReconDailyDelta(BaseMain):
         # self.client = constants.get(self.args.profile, "CLIENT")
         # self.env = constants.get(self.args.profile, "ENVIRONMENT")
         # self.region = constants.get(self.args.profile, "REGION")
-        self.custodian_folder = constants.get(self.args.profile, "CUSTODIAN_FOLDER")
+        self.custodian_folder = constants.get(self.args.profile.upper(), "CUSTODIAN_FOLDER")
 
     def add_extra_args(self):
         self.parser.add_argument(
