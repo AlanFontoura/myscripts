@@ -17,10 +17,10 @@ def get_overnight_data(date, client):
 
     # Step 1: Define the local folder where files will be downloaded
     local_folder = os.path.join("get_overnight_data/outputs", client, date)
-    os.makedirs(local_folder, exist_ok=True)  # Create the local folder if it doesn't exist
+    # os.makedirs(local_folder, exist_ok=True)  # Create the local folder if it doesn't exist
     
-    print(f"Downloading files from S3 folder: {s3_folder}")
-    print(f"Saving files to local folder: {local_folder}")
+    # print(f"Downloading files from S3 folder: {s3_folder}")
+    # print(f"Saving files to local folder: {local_folder}")
     
     # Step 4: List all files in the S3 folder
     try:
@@ -28,6 +28,10 @@ def get_overnight_data(date, client):
         if not s3_files:
             print(f"No files found in S3 folder: {s3_folder}")
             return
+        else:
+            print(f"Downloading files from S3 folder: {s3_folder}")
+            print(f"Saving files to local folder: {local_folder}")
+            os.makedirs(local_folder, exist_ok=True)  # Create the local folder if it doesn't exist
         
         # Step 5: Download each file to the local folder
         for s3_file in s3_files:
