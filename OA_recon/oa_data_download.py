@@ -44,6 +44,16 @@ class OADataDownload(BaseMain):
             required=False,
             help="Hierarchy level to download data (either accounts, clients or households)",
         )
+        
+        self.parser.add_argument(
+            "-f",
+            "--filter",
+            dest="filter",
+            action="store_true",
+            default=False,  
+            required=False,
+            help="Filter the entity IDs based on VNF data",
+        )
 
     def create_output_folder(self) -> None:
         try:
@@ -91,7 +101,7 @@ class OADataDownload(BaseMain):
     @property
     def vnf_entities(self):
         vnf_entities = f"vnf_{self.args.level}.csv"
-        if vnf_entities in os.listdir("OA_recon/inputs"):
+        if vnf_entities in os.listdir("OA_recon/inputs") and self.args.filter:
             vnf_data = pd.read_csv(f"OA_recon/inputs/{vnf_entities}")
             return vnf_data["Portfolio Firm Provided Key"].unique().tolist()
         return None
@@ -104,8 +114,8 @@ class OADataDownload(BaseMain):
             entities = self.get_entity_data()
             entities.to_csv(f"OA_recon/inputs/{self.input_file}", index=False)
 
-        # if self.vnf_entities:
-            # entities = entities[entities["firm_provided_key"].isin(self.vnf_entities)]
+        if self.vnf_entities:
+            entities = entities[entities["firm_provided_key"].isin(self.vnf_entities)]
 
         return entities
 
