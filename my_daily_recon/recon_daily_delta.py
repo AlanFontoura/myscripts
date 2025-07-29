@@ -137,14 +137,15 @@ class ReconDailyDelta(BaseMain):
         new_breaks = self.compare_recon_files(current, previous)
         today = new_breaks.loc[0, "Date"]
         new_breaks.to_csv(f"my_daily_recon/outputs/{today}_new_breaks.csv", index=False)
-        positions = self.get_positions(new_breaks)
         transactions = self.get_transactions(new_breaks)
-        positions.to_csv(
-            f"my_daily_recon/outputs/{today}_new_break_positions.csv", index=False
-        )
         transactions.to_csv(
             f"my_daily_recon/outputs/{today}_new_break_transactions.csv", index=False
         )
+        positions = self.get_positions(new_breaks)
+        positions.to_csv(
+            f"my_daily_recon/outputs/{today}_new_break_positions.csv", index=False
+        )
+
 
 
 if __name__ == "__main__":
