@@ -158,21 +158,21 @@ class OARecon:
         try:
             pd.concat(full_recon_list).merge(accounts, how="left").sort_values(
                 ["Account ID", "Date"]
-            ).to_csv(f"OA_recon/outputs/full_recon_{today}.csv", index=False)
+            ).to_csv(f"OA_recon/outputs/full_recon_{self.args.level}_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on full recon")
 
         try:
             pd.concat(filtered_recon_list).merge(accounts, how="left").sort_values(
                 ["Account ID", "Date"]
-            ).to_csv(f"OA_recon/outputs/filtered_recon_{today}.csv", index=False)
+            ).to_csv(f"OA_recon/outputs/filtered_recon_{self.args.level}_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on filtered recon")
 
         try:
             pd.concat(break_count_list).merge(accounts, how="left").sort_values(
                 ["Account ID"]
-            ).to_csv(f"OA_recon/outputs/break_count_{today}.csv", index=False)
+            ).to_csv(f"OA_recon/outputs/break_count_{self.args.level}_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on break count")
 
