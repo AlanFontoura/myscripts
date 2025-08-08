@@ -169,7 +169,7 @@ class OADataDownload(BaseMain):
             parser = ChartTableFormatter(resp, payload)
             res = parser.parse_data()
             logger.info(f"Download OK for {self.args.level[:(-1)]} {firm_provided_key}")
-            res.insert(1, "Entity ID", firm_provided_key)
+            res.insert(1, f"{self.args.level.capitalize()[:(-1)]} ID", firm_provided_key)
             res.to_csv(os.path.join(self.output_folder, filename), index=False)
         except NoResponseError:
             logger.warning(f"No response for {self.args.level[:(-1)]} {firm_provided_key}")
@@ -190,9 +190,35 @@ class OADataDownload(BaseMain):
         with Pool() as pool:
             pool.starmap(self.run_calc, account_entity_id_pairs)
 
+    def concatenate_data(self):
+        files = os.listdir(self.output_folder)
+        if not files:
+            logger.warning("No files to concatenate")
+            return
+
+        dataframes = []
+        for file in files:
+            file_path = os.path.join(self.output_folder, file)
+            df = pd.read_csv(file_path)
+            if not df.empty:
+                dataframes.append(df)
+
+        if dataframes:
+            concatenated_df = pd.concat(dataframes, ignore_index=True).sort_values(
+                by=[f"{self.args.level.capitalize()[:(-1)]} ID", "Date"]
+            )
+            concatenated_df.to_csv(
+                os.path.join(self.output_folder, f"concatenated_{self.args.level}.csv"),
+                index=False,
+            )
+            logger.info("Data concatenation completed")
+        else:
+            logger.warning("No valid dataframes to concatenate")
+
     def after_login(self):
         self.create_output_folder()
         self.run_parallel_calcs()
+        self.concatenate_data()
         logger.info("Done!")
 
 
