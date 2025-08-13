@@ -301,16 +301,17 @@ class MyDailyRecon(BaseMain):
                 "Price - Diff",
                 "Price - Reconciled",
             ]
-        cashlike = recon.loc[recon["Category"] == "Cashlike", cols].drop(columns="Security Type")
-        marketable = recon.loc[recon["Category"] == "Marketable", cols]
-        non_marketable = recon.loc[recon["Category"] == "Non Marketable", cols].drop(columns=units_and_price)
-        true_pe = recon.loc[recon["Category"] == "True PE", cols].drop(columns=units_and_price)
+        recon = recon.sort_values(['Account ID', 'Category', 'Units - Diff', 'Security Name', 'Security ID'])
+        recon.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_breaks_only.csv", index=False)
+        # cashlike = recon.loc[recon["Category"] == "Cashlike", cols].drop(columns="Security Type")
+        # marketable = recon.loc[recon["Category"] == "Marketable", cols]
+        # non_marketable = recon.loc[recon["Category"] == "Non Marketable", cols].drop(columns=units_and_price)
+        # true_pe = recon.loc[recon["Category"] == "True PE", cols].drop(columns=units_and_price)
 
-        cashlike.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_cashlike_recon.csv", index=False)
-        marketable.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_marketable_recon.csv", index=False)
-        non_marketable.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_non_marketable_recon.csv", index=False)
-        true_pe.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_true_pe_recon.csv", index=False)
-
+        # cashlike.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_cashlike_recon.csv", index=False)
+        # marketable.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_marketable_recon.csv", index=False)
+        # non_marketable.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_non_marketable_recon.csv", index=False)
+        # true_pe.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_true_pe_recon.csv", index=False)
 
     def output_file(self, recon):
         """
