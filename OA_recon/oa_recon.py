@@ -35,7 +35,7 @@ class OARecon:
             help="Set the recon level (either accounts, clients or households)",
         )
         self.args = self.parser.parse_args()
-        self.base_columns = ["Entity ID", "Date"]
+        # self.base_columns = ["Entity ID", "Date"]
         self.comparison_columns = [
             "Net Deposits",
             "Net Additions",
@@ -45,14 +45,22 @@ class OARecon:
             "Market Value EoP",
             "Total Return",
         ]
+        
+    @property
+    def base_columns(self):
+        return [f"{self.args.level.capitalize()[:-1]} ID", "Date"]
 
     @property
     def base_files(self):
-        return os.listdir(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}")
+        base_files = os.listdir(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}")
+        base_files = [file for file in base_files if 'concatenated' not in file]
+        return base_files
 
     @property
     def target_files(self):
-        return os.listdir(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}")
+        target_files = os.listdir(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}")
+        target_files = [file for file in target_files if 'concatenated' not in file]
+        return target_files
 
     def get_vnf_data(self, file_path):
         vnf_data = pd.read_csv(file_path)
@@ -110,8 +118,9 @@ class OARecon:
             f"{index + 1} - {value}_recon"
             for index, value in enumerate(self.comparison_columns)
         ]
+        entity_id_col = self.base_columns[0]
         breaks = (
-            df.groupby("Account ID")[recon_cols]
+            df.groupby(entity_id_col)[recon_cols]
             .apply(lambda x: (abs(x) > 1).sum())
             .reset_index(drop=False)
         )
@@ -119,8 +128,8 @@ class OARecon:
 
     def recon_values_and_flows(self):
         today = datetime.today().strftime("%Y-%m-%d")
-        base_files = os.listdir(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}")
-        target_files = os.listdir(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}")
+        # base_files = os.listdir(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}")
+        # target_files = os.listdir(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}")
         accounts = pd.read_csv("OA_recon/inputs/Account.csv")[
             ["AccountCode", "AccountName", "CustodianName"]
         ]
@@ -132,15 +141,15 @@ class OARecon:
             },
             inplace=True,
         )
-        total_files = len(base_files)
+        total_files = len(self.base_files)
         counter = 0
         full_recon_list = []
         filtered_recon_list = []
         break_count_list = []
-        for file in base_files:
+        for file in self.base_files:
             counter += 1
             logger.info(f"Reconciling file #{counter}/{total_files}")
-            if file not in target_files:
+            if file not in self.target_files:
                 logger.info("No target data. Skip file")
                 continue
             try:
@@ -156,22 +165,22 @@ class OARecon:
                 continue
 
         try:
-            pd.concat(full_recon_list).merge(accounts, how="left").sort_values(
-                ["Account ID", "Date"]
+            pd.concat(full_recon_list).sort_values(
+                self.base_columns
             ).to_csv(f"OA_recon/outputs/full_recon_{self.args.level}_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on full recon")
 
         try:
-            pd.concat(filtered_recon_list).merge(accounts, how="left").sort_values(
-                ["Account ID", "Date"]
+            pd.concat(filtered_recon_list).sort_values(
+                self.base_columns
             ).to_csv(f"OA_recon/outputs/filtered_recon_{self.args.level}_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on filtered recon")
 
         try:
-            pd.concat(break_count_list).merge(accounts, how="left").sort_values(
-                ["Account ID"]
+            pd.concat(break_count_list).sort_values(
+                self.base_columns[0]
             ).to_csv(f"OA_recon/outputs/break_count_{self.args.level}_{today}.csv", index=False)
         except ValueError:
             print("Nothing to concatenate on break count")
