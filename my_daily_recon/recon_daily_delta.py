@@ -9,12 +9,6 @@ from base_main import BaseMain
 LOG = logging.getLogger(__name__)
 
 
-"""
-
-
-"""
-
-
 class ReconDailyDelta(BaseMain):
     def __init__(self):
         super().__init__()
@@ -41,32 +35,25 @@ class ReconDailyDelta(BaseMain):
         """
         outpuyt_dir = "my_daily_recon/outputs/"
         files = os.listdir(outpuyt_dir)
-        files = [file for file in files if "full_recon" in file]
+        files = [file for file in files if "breaks_only.csv" in file]
         files.sort()
         current = pd.read_csv(os.path.join(outpuyt_dir, files[-1]))
         previous = pd.read_csv(os.path.join(outpuyt_dir, files[-2]))
         return current, previous
 
-    def filter_recon_file(self, recon_file):
-        """
-        Filter the reconciliation file to include only relevant columns.
-        """
-        recon_file["reconciled"] = (
-            recon_file["Units - Reconciled"] & recon_file["Market Value - Reconciled"]
-        )
-        recon_file = recon_file[~recon_file["reconciled"]]
-        recon_file.drop(columns="reconciled", inplace=True, errors="ignore")
-        return recon_file
-
     def compare_recon_files(self, current, previous):
         full_recon = current.merge(
             previous, on=["Account ID", "Security ID"], indicator=True, how="outer"
         )
-        delta = full_recon.loc[
+        delta_new = full_recon.loc[
             full_recon["_merge"] == "left_only", ["Account ID", "Security ID"]
         ]
-        new_breaks = current.merge(delta, how="inner")
-        return new_breaks
+        delta_fix = full_recon.loc[
+            full_recon["_merge"] == "right_only", ["Account ID", "Security ID"]
+        ]
+        new_breaks = current.merge(delta_new, how="inner")
+        fixed_breaks = previous.merge(delta_fix, how="inner")
+        return new_breaks, fixed_breaks
 
     def get_transactions(self, new_breaks):
         logging.info("Fetching transaction files from S3...")
@@ -132,11 +119,10 @@ class ReconDailyDelta(BaseMain):
 
     def run(self):
         current, previous = self.get_recent_recon_files()
-        current = self.filter_recon_file(current)
-        previous = self.filter_recon_file(previous)
-        new_breaks = self.compare_recon_files(current, previous)
+        new_breaks, fixed_breaks = self.compare_recon_files(current, previous)
         today = new_breaks.loc[0, "Date"]
         new_breaks.to_csv(f"my_daily_recon/outputs/{today}_new_breaks.csv", index=False)
+        fixed_breaks.to_csv(f"my_daily_recon/outputs/{today}_fixed_breaks.csv", index=False)
         transactions = self.get_transactions(new_breaks)
         transactions.to_csv(
             f"my_daily_recon/outputs/{today}_new_break_transactions.csv", index=False
