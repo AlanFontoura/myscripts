@@ -45,21 +45,25 @@ class OARecon:
             "Market Value EoP",
             "Total Return",
         ]
-        
+
     @property
     def base_columns(self):
         return [f"{self.args.level.capitalize()[:-1]} ID", "Date"]
 
     @property
     def base_files(self):
-        base_files = os.listdir(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}")
-        base_files = [file for file in base_files if 'concatenated' not in file]
+        base_files = os.listdir(
+            f"OA_recon/outputs/{self.args.base_env}/{self.args.level}"
+        )
+        base_files = [file for file in base_files if "concatenated" not in file]
         return base_files
 
     @property
     def target_files(self):
-        target_files = os.listdir(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}")
-        target_files = [file for file in target_files if 'concatenated' not in file]
+        target_files = os.listdir(
+            f"OA_recon/outputs/{self.args.target_env}/{self.args.level}"
+        )
+        target_files = [file for file in target_files if "concatenated" not in file]
         return target_files
 
     def get_vnf_data(self, file_path):
@@ -74,8 +78,12 @@ class OARecon:
         return vnf_data
 
     def merge_data(self, file):
-        base_df = self.get_vnf_data(f"OA_recon/outputs/{self.args.base_env}/{self.args.level}/{file}")
-        target_df = self.get_vnf_data(f"OA_recon/outputs/{self.args.target_env}/{self.args.level}/{file}")
+        base_df = self.get_vnf_data(
+            f"OA_recon/outputs/{self.args.base_env}/{self.args.level}/{file}"
+        )
+        target_df = self.get_vnf_data(
+            f"OA_recon/outputs/{self.args.target_env}/{self.args.level}/{file}"
+        )
 
         recon_df = base_df.merge(
             target_df,
@@ -165,23 +173,26 @@ class OARecon:
                 continue
 
         try:
-            pd.concat(full_recon_list).sort_values(
-                self.base_columns
-            ).to_csv(f"OA_recon/outputs/full_recon_{self.args.level}_{today}.csv", index=False)
+            pd.concat(full_recon_list).sort_values(self.base_columns).to_csv(
+                f"OA_recon/outputs/full_recon_{self.args.level}_{today}.csv",
+                index=False,
+            )
         except ValueError:
             print("Nothing to concatenate on full recon")
 
         try:
-            pd.concat(filtered_recon_list).sort_values(
-                self.base_columns
-            ).to_csv(f"OA_recon/outputs/filtered_recon_{self.args.level}_{today}.csv", index=False)
+            pd.concat(filtered_recon_list).sort_values(self.base_columns).to_csv(
+                f"OA_recon/outputs/filtered_recon_{self.args.level}_{today}.csv",
+                index=False,
+            )
         except ValueError:
             print("Nothing to concatenate on filtered recon")
 
         try:
-            pd.concat(break_count_list).sort_values(
-                self.base_columns[0]
-            ).to_csv(f"OA_recon/outputs/break_count_{self.args.level}_{today}.csv", index=False)
+            pd.concat(break_count_list).sort_values(self.base_columns[0]).to_csv(
+                f"OA_recon/outputs/break_count_{self.args.level}_{today}.csv",
+                index=False,
+            )
         except ValueError:
             print("Nothing to concatenate on break count")
 

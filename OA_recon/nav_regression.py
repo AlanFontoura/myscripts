@@ -109,7 +109,9 @@ class NAVRegression(BaseMain):
                 - comparison[f"{col} - {self.args.base_version}"]
             )
             comparison[f"{col} - Reconciled"] = abs(comparison[f"{col} - Diff"]) < 0.01
-        comparison['Total Return - Reconciled'] = abs(comparison['Total Return - Diff']) < 0.0001
+        comparison["Total Return - Reconciled"] = (
+            abs(comparison["Total Return - Diff"]) < 0.0001
+        )
         comparison = comparison[self.return_columns(cols)]
         return comparison
 

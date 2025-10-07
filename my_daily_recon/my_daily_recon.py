@@ -43,7 +43,9 @@ class MyDailyRecon(BaseMain):
         self.region = constants.get(self.args.profile.upper(), "REGION")
         self.tracking_file = constants.get(self.args.profile.upper(), "TRACKING_FILE")
         self.position_file = constants.get(self.args.profile.upper(), "POSITION_FILE")
-        self.security_file = constants.get(self.args.profile.upper(), "SECURITY_MASTER_FILE")
+        self.security_file = constants.get(
+            self.args.profile.upper(), "SECURITY_MASTER_FILE"
+        )
         self.usd_security = constants.get(self.args.profile.upper(), "USD_SECURITY")
         threshold_str = constants.get(self.args.profile.upper(), "THRESHOLD")
         self.threshold = dict(item.split("=") for item in threshold_str.split(","))
@@ -269,40 +271,47 @@ class MyDailyRecon(BaseMain):
         return recon
 
     def split_recon(self, recon, current_date):
-        recon['reconciled'] = recon['Units - Reconciled'] & recon['Market Value - Reconciled']
-        recon = recon[~recon['reconciled']]
+        recon["reconciled"] = (
+            recon["Units - Reconciled"] & recon["Market Value - Reconciled"]
+        )
+        recon = recon[~recon["reconciled"]]
         cols = [
-                # "Date",
-                "Account ID",
-                "Security ID",
-                "Security Name",
-                "Symbol",
-                "Security Type",
-                "Units - d1g1t",
-                "Units - Custodian",
-                "Units - Diff",
-                "Units - Reconciled",
-                "Price - d1g1t",
-                "Price - Custodian",
-                "Price - Diff",
-                "Price - Reconciled",
-                "Market Value - d1g1t",
-                "Market Value - Custodian",
-                "Market Value - Diff",
-                "Market Value - Reconciled",
-            ]
+            # "Date",
+            "Account ID",
+            "Security ID",
+            "Security Name",
+            "Symbol",
+            "Security Type",
+            "Units - d1g1t",
+            "Units - Custodian",
+            "Units - Diff",
+            "Units - Reconciled",
+            "Price - d1g1t",
+            "Price - Custodian",
+            "Price - Diff",
+            "Price - Reconciled",
+            "Market Value - d1g1t",
+            "Market Value - Custodian",
+            "Market Value - Diff",
+            "Market Value - Reconciled",
+        ]
         units_and_price = [
-                "Units - d1g1t",
-                "Units - Custodian",
-                "Units - Diff",
-                "Units - Reconciled",
-                "Price - d1g1t",
-                "Price - Custodian",
-                "Price - Diff",
-                "Price - Reconciled",
-            ]
-        recon = recon.sort_values(['Account ID', 'Category', 'Units - Diff', 'Security Name', 'Security ID'])
-        recon.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_breaks_only.csv", index=False)
+            "Units - d1g1t",
+            "Units - Custodian",
+            "Units - Diff",
+            "Units - Reconciled",
+            "Price - d1g1t",
+            "Price - Custodian",
+            "Price - Diff",
+            "Price - Reconciled",
+        ]
+        recon = recon.sort_values(
+            ["Account ID", "Category", "Units - Diff", "Security Name", "Security ID"]
+        )
+        recon.to_csv(
+            f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_breaks_only.csv",
+            index=False,
+        )
         # cashlike = recon.loc[recon["Category"] == "Cashlike", cols].drop(columns="Security Type")
         # marketable = recon.loc[recon["Category"] == "Marketable", cols]
         # non_marketable = recon.loc[recon["Category"] == "Non Marketable", cols].drop(columns=units_and_price)
@@ -342,9 +351,7 @@ class MyDailyRecon(BaseMain):
         ]
         current_date = recon.iloc[0, 0]
         recon = recon.sort_values(["Account ID", "Security ID"])
-        recon_file = (
-            f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_full_recon.csv"
-        )
+        recon_file = f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_full_recon.csv"
         recon.to_csv(recon_file, index=False)
         self.split_recon(recon, current_date)
         LOG.info(f"Reconciliation files saved to my_daily_recon/outputs/")

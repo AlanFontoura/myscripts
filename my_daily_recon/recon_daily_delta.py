@@ -17,7 +17,9 @@ class ReconDailyDelta(BaseMain):
         # self.client = constants.get(self.args.profile, "CLIENT")
         # self.env = constants.get(self.args.profile, "ENVIRONMENT")
         # self.region = constants.get(self.args.profile, "REGION")
-        self.custodian_folder = constants.get(self.args.profile.upper(), "CUSTODIAN_FOLDER")
+        self.custodian_folder = constants.get(
+            self.args.profile.upper(), "CUSTODIAN_FOLDER"
+        )
 
     def add_extra_args(self):
         self.parser.add_argument(
@@ -28,7 +30,7 @@ class ReconDailyDelta(BaseMain):
             required=True,
             help="Client profile to be used",
         )
-        
+
         self.parser.add_argument(
             "-dh",
             "--download_history",
@@ -78,7 +80,7 @@ class ReconDailyDelta(BaseMain):
         filtering_df = new_breaks[["Account ID", "Security ID"]].rename(
             columns={"Account ID": "AccountCode", "Security ID": "SecurityID1"}
         )
-        
+
         counter = 0
 
         for file in transaction_files:
@@ -109,7 +111,7 @@ class ReconDailyDelta(BaseMain):
         filtering_df = new_breaks[["Account ID", "Security ID"]].rename(
             columns={"Account ID": "AccountCode", "Security ID": "SecurityID"}
         )
-        
+
         counter = 0
 
         for file in position_files:
@@ -132,17 +134,19 @@ class ReconDailyDelta(BaseMain):
         new_breaks, fixed_breaks = self.compare_recon_files(current, previous)
         today = new_breaks.loc[0, "Date"]
         new_breaks.to_csv(f"my_daily_recon/outputs/{today}_new_breaks.csv", index=False)
-        fixed_breaks.to_csv(f"my_daily_recon/outputs/{today}_fixed_breaks.csv", index=False)
+        fixed_breaks.to_csv(
+            f"my_daily_recon/outputs/{today}_fixed_breaks.csv", index=False
+        )
         if self.args.download_history:
             transactions = self.get_transactions(new_breaks)
             transactions.to_csv(
-                f"my_daily_recon/outputs/{today}_new_break_transactions.csv", index=False
+                f"my_daily_recon/outputs/{today}_new_break_transactions.csv",
+                index=False,
             )
             positions = self.get_positions(new_breaks)
             positions.to_csv(
                 f"my_daily_recon/outputs/{today}_new_break_positions.csv", index=False
             )
-
 
 
 if __name__ == "__main__":

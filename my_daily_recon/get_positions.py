@@ -7,7 +7,9 @@ output_folder = "my_daily_recon/outputs"
 output_files = os.listdir(output_folder)
 output_files.sort()
 most_recent_recon = pd.read_csv(f"{output_folder}/{output_files[-1]}")
-most_recent_recon.loc[most_recent_recon['Security ID'] == 'USD', 'Security ID'] = 'BC36B21F-D673-492F-8D1D-30956550D237'
+most_recent_recon.loc[most_recent_recon["Security ID"] == "USD", "Security ID"] = (
+    "BC36B21F-D673-492F-8D1D-30956550D237"
+)
 
 unit_breaks = most_recent_recon.loc[
     ~most_recent_recon["Units - Reconciled"], ["Account ID", "Security ID"]
@@ -72,7 +74,7 @@ for file in position_files:
             )
         else:
             mv_df = mv[["Account ID", "Security ID", dated_folder]]
-            
+
         dated_folder_set.append(dated_folder)
     else:
         # Skip older dated folders
@@ -84,9 +86,12 @@ mv_mask = mv_df[dated_folder_set].isin([0, np.nan]).all(axis=1)
 units_df = units_df[~units_mask].fillna(0).sort_values(["Account ID", "Security ID"])
 mv_df = mv_df[~mv_mask].fillna(0).sort_values(["Account ID", "Security ID"])
 
-units_df.loc[units_df['Security ID'] == 'BC36B21F-D673-492F-8D1D-30956550D237', 'Security ID'] = 'USD'
-mv_df.loc[mv_df['Security ID'] == 'BC36B21F-D673-492F-8D1D-30956550D237', 'Security ID'] = 'USD'
+units_df.loc[
+    units_df["Security ID"] == "BC36B21F-D673-492F-8D1D-30956550D237", "Security ID"
+] = "USD"
+mv_df.loc[
+    mv_df["Security ID"] == "BC36B21F-D673-492F-8D1D-30956550D237", "Security ID"
+] = "USD"
 
-units_df.to_csv('my_daily_recon/outputs/units.csv', index=False)
-mv_df.to_csv('my_daily_recon/outputs/mv.csv', index=False)
-
+units_df.to_csv("my_daily_recon/outputs/units.csv", index=False)
+mv_df.to_csv("my_daily_recon/outputs/mv.csv", index=False)

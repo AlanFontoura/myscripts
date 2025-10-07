@@ -9,10 +9,10 @@ try:
 
     # cursor.execute("SELECT * FROM fees_feeschedule;")
     # rows = cursor.fetchall()
-    
+
     # for row in rows:
-        # print(row)
-        
+    # print(row)
+
     query = "SELECT * FROM fees_feeschedule;"
     df = pd.read_sql(query, connection)
     print(df)
@@ -21,6 +21,6 @@ except Exception as e:
     print(f"An error occurred: {e}")
 finally:
     # if cursor:
-        # cursor.close()
+    # cursor.close()
     if connection:
         connection.close()

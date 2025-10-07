@@ -99,17 +99,19 @@ class OADataDownload(BaseMain):
         if (self.args.level in ["clients", "households"]) and (
             self.args.server == "https://api-gresham.d1g1t.com"
         ):
-            payload["filter_sets"] = [{
-                "entities": None,
-                "items": [
-                    {
-                        "filter_criterion": "https://api-gresham.d1g1t.com/api/v1/constants/filtercriterion/account-property-user-defined-1-is-not/",
-                        "url": "https://api-gresham.d1g1t.com/api/v1/user-accounts/rule-filter-items/14/",
-                        "value": "Split",
-                    }
-                ],
-                "join_operator": "AND",
-            }]
+            payload["filter_sets"] = [
+                {
+                    "entities": None,
+                    "items": [
+                        {
+                            "filter_criterion": "https://api-gresham.d1g1t.com/api/v1/constants/filtercriterion/account-property-user-defined-1-is-not/",
+                            "url": "https://api-gresham.d1g1t.com/api/v1/user-accounts/rule-filter-items/14/",
+                            "value": "Split",
+                        }
+                    ],
+                    "join_operator": "AND",
+                }
+            ]
         return payload
 
     @property

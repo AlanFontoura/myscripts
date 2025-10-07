@@ -243,8 +243,8 @@ class SummarizeRecon(BaseMain):
         return recon
 
     def alternative_summary(self, recon, threshold=50):
-        recon['d1g1t_mv_clean'] = recon["d1g1t_mv_clean"].fillna(0)
-        recon['custodian_mv_clean'] = recon["custodian_mv_clean"].fillna(0)
+        recon["d1g1t_mv_clean"] = recon["d1g1t_mv_clean"].fillna(0)
+        recon["custodian_mv_clean"] = recon["custodian_mv_clean"].fillna(0)
         recon["mv_clean_reconciled"] = (
             abs(recon["d1g1t_mv_clean"] - recon["custodian_mv_clean"]) < threshold
         )
