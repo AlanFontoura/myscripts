@@ -34,7 +34,7 @@ class OADataDownload(BaseMain):
             required=False,
             help="Currency used in the report",
         )
-        
+
         self.parser.add_argument(
             "-lv",
             "--level",
@@ -44,13 +44,13 @@ class OADataDownload(BaseMain):
             required=False,
             help="Hierarchy level to download data (either accounts, clients or households)",
         )
-        
+
         self.parser.add_argument(
             "-f",
             "--filter",
             dest="filter",
             action="store_true",
-            default=False,  
+            default=False,
             required=False,
             help="Filter the entity IDs based on VNF data",
         )
@@ -96,6 +96,20 @@ class OADataDownload(BaseMain):
             "groups": {"selected": []},
             "metrics": {"selected": []},
         }
+        if (self.args.level in ["clients", "households"]) and (
+            self.args.server == "https://api-gresham.d1g1t.com"
+        ):
+            payload["filter_sets"] = [{
+                "entities": None,
+                "items": [
+                    {
+                        "filter_criterion": "https://api-gresham.d1g1t.com/api/v1/constants/filtercriterion/account-property-user-defined-1-is-not/",
+                        "url": "https://api-gresham.d1g1t.com/api/v1/user-accounts/rule-filter-items/14/",
+                        "value": "Split",
+                    }
+                ],
+                "join_operator": "AND",
+            }]
         return payload
 
     @property
@@ -158,21 +172,31 @@ class OADataDownload(BaseMain):
     def run_calc(self, firm_provided_key: str, entity_id: str):
         payload = self.payload
         if self.args.level == "accounts":
-            payload["control"]["selected_entities"] = {"accounts_or_positions": [[entity_id]]}
+            payload["control"]["selected_entities"] = {
+                "accounts_or_positions": [[entity_id]]
+            }
         elif self.args.level == "clients":
             payload["control"]["selected_entities"] = {"clients": [entity_id]}
+            if self.args.server == "https://api-gresham.d1g1t.com":
+                payload["filter_sets"][0]["entities"] = [entity_id]
         elif self.args.level == "households":
             payload["control"]["selected_entities"] = {"households": [entity_id]}
+            if self.args.server == "https://api-gresham.d1g1t.com":
+                payload["filter_sets"][0]["entities"] = [entity_id]
         filename = f"{firm_provided_key}.csv"
         try:
             resp = self.get_calculation("net-asset-value-history", payload)
             parser = ChartTableFormatter(resp, payload)
             res = parser.parse_data()
             logger.info(f"Download OK for {self.args.level[:(-1)]} {firm_provided_key}")
-            res.insert(1, f"{self.args.level.capitalize()[:(-1)]} ID", firm_provided_key)
+            res.insert(
+                1, f"{self.args.level.capitalize()[:(-1)]} ID", firm_provided_key
+            )
             res.to_csv(os.path.join(self.output_folder, filename), index=False)
         except NoResponseError:
-            logger.warning(f"No response for {self.args.level[:(-1)]} {firm_provided_key}")
+            logger.warning(
+                f"No response for {self.args.level[:(-1)]} {firm_provided_key}"
+            )
 
     def run_parallel_calcs(self):
         downloaded_accounts = [
@@ -216,6 +240,8 @@ class OADataDownload(BaseMain):
             logger.warning("No valid dataframes to concatenate")
 
     def after_login(self):
+        # entity_ids = self.get_entity_data()
+        # entity_ids.to_csv(f'OA_recon/{self.args.level}.csv', index=False)
         self.create_output_folder()
         self.run_parallel_calcs()
         self.concatenate_data()
