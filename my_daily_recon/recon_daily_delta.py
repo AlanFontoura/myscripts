@@ -28,6 +28,16 @@ class ReconDailyDelta(BaseMain):
             required=True,
             help="Client profile to be used",
         )
+        
+        self.parser.add_argument(
+            "-dh",
+            "--download_history",
+            dest="download_history",
+            action="store_true",
+            default=False,
+            required=False,
+            help="Download historical data from S3",
+        )
 
     def get_recent_recon_files(self):
         """
@@ -123,14 +133,15 @@ class ReconDailyDelta(BaseMain):
         today = new_breaks.loc[0, "Date"]
         new_breaks.to_csv(f"my_daily_recon/outputs/{today}_new_breaks.csv", index=False)
         fixed_breaks.to_csv(f"my_daily_recon/outputs/{today}_fixed_breaks.csv", index=False)
-        transactions = self.get_transactions(new_breaks)
-        transactions.to_csv(
-            f"my_daily_recon/outputs/{today}_new_break_transactions.csv", index=False
-        )
-        positions = self.get_positions(new_breaks)
-        positions.to_csv(
-            f"my_daily_recon/outputs/{today}_new_break_positions.csv", index=False
-        )
+        if self.args.download_history:
+            transactions = self.get_transactions(new_breaks)
+            transactions.to_csv(
+                f"my_daily_recon/outputs/{today}_new_break_transactions.csv", index=False
+            )
+            positions = self.get_positions(new_breaks)
+            positions.to_csv(
+                f"my_daily_recon/outputs/{today}_new_break_positions.csv", index=False
+            )
 
 
 
