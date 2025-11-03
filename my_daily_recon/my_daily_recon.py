@@ -3,7 +3,6 @@ from configparser import ConfigParser
 import numpy as np
 import logging
 import argparse
-# from base_main import BaseMain
 
 LOG = logging.getLogger(__name__)
 
@@ -36,10 +35,8 @@ The necessary inputs to run the code are:
 
 class MyDailyRecon:
     def __init__(self):
-        # super().__init__()
         self.parser = argparse.ArgumentParser(description=__doc__)
 
-    # def add_extra_args(self):
         self.parser.add_argument(
             "-p",
             "--profile",
@@ -280,36 +277,6 @@ class MyDailyRecon:
             recon["Units - Reconciled"] & recon["Market Value - Reconciled"]
         )
         recon = recon[~recon["reconciled"]]
-        cols = [
-            # "Date",
-            "Account ID",
-            "Security ID",
-            "Security Name",
-            "Symbol",
-            "Security Type",
-            "Units - d1g1t",
-            "Units - Custodian",
-            "Units - Diff",
-            "Units - Reconciled",
-            "Price - d1g1t",
-            "Price - Custodian",
-            "Price - Diff",
-            "Price - Reconciled",
-            "Market Value - d1g1t",
-            "Market Value - Custodian",
-            "Market Value - Diff",
-            "Market Value - Reconciled",
-        ]
-        units_and_price = [
-            "Units - d1g1t",
-            "Units - Custodian",
-            "Units - Diff",
-            "Units - Reconciled",
-            "Price - d1g1t",
-            "Price - Custodian",
-            "Price - Diff",
-            "Price - Reconciled",
-        ]
         recon = recon.sort_values(
             ["Account ID", "Category", "Units - Diff", "Security Name", "Security ID"]
         )
@@ -317,15 +284,6 @@ class MyDailyRecon:
             f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_breaks_only.csv",
             index=False,
         )
-        # cashlike = recon.loc[recon["Category"] == "Cashlike", cols].drop(columns="Security Type")
-        # marketable = recon.loc[recon["Category"] == "Marketable", cols]
-        # non_marketable = recon.loc[recon["Category"] == "Non Marketable", cols].drop(columns=units_and_price)
-        # true_pe = recon.loc[recon["Category"] == "True PE", cols].drop(columns=units_and_price)
-
-        # cashlike.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_cashlike_recon.csv", index=False)
-        # marketable.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_marketable_recon.csv", index=False)
-        # non_marketable.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_non_marketable_recon.csv", index=False)
-        # true_pe.to_csv(f"my_daily_recon/outputs/{current_date}_{self.client}_{self.env}_true_pe_recon.csv", index=False)
 
     def output_file(self, recon):
         """
@@ -344,14 +302,14 @@ class MyDailyRecon:
                 "Units - Custodian",
                 "Units - Diff",
                 "Units - Reconciled",
-                "Price - d1g1t",
-                "Price - Custodian",
-                "Price - Diff",
-                "Price - Reconciled",
                 "Market Value - d1g1t",
                 "Market Value - Custodian",
                 "Market Value - Diff",
                 "Market Value - Reconciled",
+                "Price - d1g1t",
+                "Price - Custodian",
+                "Price - Diff",
+                "Price - Reconciled",
             ]
         ]
         current_date = recon.iloc[0, 0]
