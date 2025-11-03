@@ -10,4 +10,4 @@
 *.csv
 
 # Ignore virtual environments folder
-/myscripts
+/venv
