@@ -1,5 +1,5 @@
 # Ignore all inputs and outputs subfolders
-**/inputs/
+# **/inputs/
 **/outputs/
 
 # Ignore system files
@@ -8,4 +8,6 @@
 /.vscode/
 .favorites.json
 *.csv
+
+# Ignore virtual environments folder
 /myscripts
