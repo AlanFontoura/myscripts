@@ -2,7 +2,8 @@ import pandas as pd
 from configparser import ConfigParser
 import numpy as np
 import logging
-from base_main import BaseMain
+import argparse
+# from base_main import BaseMain
 
 LOG = logging.getLogger(__name__)
 
@@ -33,24 +34,12 @@ The necessary inputs to run the code are:
 """
 
 
-class MyDailyRecon(BaseMain):
+class MyDailyRecon:
     def __init__(self):
-        super().__init__()
-        constants = ConfigParser()
-        constants.read("my_daily_recon/inputs/my_daily_recon.ini")
-        self.client = constants.get(self.args.profile.upper(), "CLIENT")
-        self.env = constants.get(self.args.profile.upper(), "ENVIRONMENT")
-        self.region = constants.get(self.args.profile.upper(), "REGION")
-        self.tracking_file = constants.get(self.args.profile.upper(), "TRACKING_FILE")
-        self.position_file = constants.get(self.args.profile.upper(), "POSITION_FILE")
-        self.security_file = constants.get(
-            self.args.profile.upper(), "SECURITY_MASTER_FILE"
-        )
-        self.usd_security = constants.get(self.args.profile.upper(), "USD_SECURITY")
-        threshold_str = constants.get(self.args.profile.upper(), "THRESHOLD")
-        self.threshold = dict(item.split("=") for item in threshold_str.split(","))
+        # super().__init__()
+        self.parser = argparse.ArgumentParser(description=__doc__)
 
-    def add_extra_args(self):
+    # def add_extra_args(self):
         self.parser.add_argument(
             "-p",
             "--profile",
@@ -68,6 +57,22 @@ class MyDailyRecon(BaseMain):
             required=True,
             help="Recon date (YYYY-MM-DD)",
         )
+
+        self.args = self.parser.parse_args()
+
+        constants = ConfigParser()
+        constants.read("my_daily_recon/inputs/my_daily_recon.ini")
+        self.client = constants.get(self.args.profile.upper(), "CLIENT")
+        self.env = constants.get(self.args.profile.upper(), "ENVIRONMENT")
+        self.region = constants.get(self.args.profile.upper(), "REGION")
+        self.tracking_file = constants.get(self.args.profile.upper(), "TRACKING_FILE")
+        self.position_file = constants.get(self.args.profile.upper(), "POSITION_FILE")
+        self.security_file = constants.get(
+            self.args.profile.upper(), "SECURITY_MASTER_FILE"
+        )
+        self.usd_security = constants.get(self.args.profile.upper(), "USD_SECURITY")
+        threshold_str = constants.get(self.args.profile.upper(), "THRESHOLD")
+        self.threshold = dict(item.split("=") for item in threshold_str.split(","))
 
     def get_tracking(self):
         """
