@@ -1,6 +1,5 @@
 import argparse
 import os
-from inputs import lookup
 import awswrangler as wr
 
 
@@ -13,7 +12,7 @@ def get_overnight_data(date, client):
         client_name (str): The name of the client.
     """
     date = date.replace("-", "")  # Ensure date is in YYYYMMDD format
-    s3_folder = lookup.s3_path[client]
+    s3_folder = 's3://d1g1t-custodian-data-us-east-1/apx/gresham/YYYYMMDD/'
     s3_folder = s3_folder.replace("YYYYMMDD", date)
 
     # Step 1: Define the local folder where files will be downloaded
