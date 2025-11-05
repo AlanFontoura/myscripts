@@ -4,24 +4,18 @@ import pandas as pd
 from configparser import ConfigParser
 import numpy as np
 import logging
-from base_main import BaseMain
+import argparse
 
 LOG = logging.getLogger(__name__)
 
 
-class ReconDailyDelta(BaseMain):
+class ReconDailyDelta:
     def __init__(self):
-        super().__init__()
         constants = ConfigParser()
         constants.read("my_daily_recon/inputs/my_daily_recon.ini")
-        # self.client = constants.get(self.args.profile, "CLIENT")
-        # self.env = constants.get(self.args.profile, "ENVIRONMENT")
-        # self.region = constants.get(self.args.profile, "REGION")
-        self.custodian_folder = constants.get(
-            self.args.profile.upper(), "CUSTODIAN_FOLDER"
-        )
 
-    def add_extra_args(self):
+        self.parser = argparse.ArgumentParser(description=__doc__)
+    
         self.parser.add_argument(
             "-p",
             "--profile",
@@ -40,6 +34,13 @@ class ReconDailyDelta(BaseMain):
             required=False,
             help="Download historical data from S3",
         )
+
+        self.args = self.parser.parse_args()
+
+        self.custodian_folder = constants.get(
+            self.args.profile.upper(), "CUSTODIAN_FOLDER"
+        )
+
 
     def get_recent_recon_files(self):
         """
