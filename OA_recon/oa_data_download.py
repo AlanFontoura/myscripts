@@ -55,6 +55,16 @@ class OADataDownload(BaseMain):
             help="Filter the entity IDs based on VNF data",
         )
 
+        self.parser.add_argument(
+            "-ga",
+            "--gresham_advised",
+            dest="ga",
+            action="store_true",
+            required=False,
+            default=False,
+            help="Filter for GA instrument only",
+        )
+
     def create_output_folder(self) -> None:
         try:
             server_name = self.args.server.replace("https://api-", "").split(".")[0]
@@ -96,17 +106,15 @@ class OADataDownload(BaseMain):
             "groups": {"selected": []},
             "metrics": {"selected": []},
         }
-        if (self.args.level in ["clients", "households"]) and (
-            self.args.server == "https://api-gresham.d1g1t.com"
-        ):
+        if self.args.ga:
             payload["filter_sets"] = [
                 {
                     "entities": None,
                     "items": [
                         {
-                            "filter_criterion": "https://api-gresham.d1g1t.com/api/v1/constants/filtercriterion/account-property-user-defined-1-is-not/",
-                            "url": "https://api-gresham.d1g1t.com/api/v1/user-accounts/rule-filter-items/14/",
-                            "value": "Split",
+                            "filter_criterion": "https://api-gresham3.d1g1tstaging.com/api/v1/constants/filtercriterion/security-property-name-is/",
+                            "url": "https://api-gresham3.d1g1tstaging.com/api/v1/user-accounts/rule-filter-items/89/",
+                            "value": "Legacy Position USD - GA",
                         }
                     ],
                     "join_operator": "AND",
@@ -179,12 +187,12 @@ class OADataDownload(BaseMain):
             }
         elif self.args.level == "clients":
             payload["control"]["selected_entities"] = {"clients": [entity_id]}
-            if self.args.server == "https://api-gresham.d1g1t.com":
-                payload["filter_sets"][0]["entities"] = [entity_id]
-        elif self.args.level == "households":
+        else:
             payload["control"]["selected_entities"] = {"households": [entity_id]}
-            if self.args.server == "https://api-gresham.d1g1t.com":
-                payload["filter_sets"][0]["entities"] = [entity_id]
+        
+        if self.args.ga:
+            payload["filter_sets"][0]["entities"] = [entity_id]
+
         filename = f"{firm_provided_key}.csv"
         try:
             resp = self.get_calculation("net-asset-value-history", payload)
@@ -207,6 +215,10 @@ class OADataDownload(BaseMain):
         entity_ids = self.entity_ids[
             ~self.entity_ids["firm_provided_key"].isin(downloaded_accounts)
         ]
+        if self.args.level == "households":
+            entity_ids = entity_ids[~entity_ids["firm_provided_key"].str.endswith("household")]
+        if self.args.level == "clients":
+            entity_ids = entity_ids[~entity_ids["firm_provided_key"].str.endswith("client")]
         account_entity_id_pairs = tuple(
             zip(
                 entity_ids["firm_provided_key"].tolist(),
@@ -251,6 +263,5 @@ class OADataDownload(BaseMain):
 
 
 if __name__ == "__main__":
-    print(os.getcwd())
     work = OADataDownload()
     work.main()
